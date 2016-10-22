@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Orion
 {
@@ -25,7 +24,6 @@ namespace Orion
                 Console.WriteLine(str);
             }
 
-            Console.WriteLine("Done!");
             Console.ReadLine();
         }
 
@@ -39,73 +37,61 @@ namespace Orion
                 givenDigitsLine.Add(i);
             }
 
-            List<char[]> variantsList = GetTernaryVariants(n - 1);
-            StringBuilder stringToCheck = new StringBuilder();
-
-            foreach (var variantArray in variantsList)
+            // Maximum value of the array of all possible substitutions ("", "+", "-")
+            char[] maxSubstValue = new char[n - 1];
+            for (int j = 0; j < n - 1; j++)
             {
-                stringToCheck.Clear().Append(givenDigitsLine[0]);
+                maxSubstValue[j] = '2';
+            }
+
+            // Start with array filled with 0
+            char[] currentSubstValue = new char[n - 1];
+            for (int j = 0; j < n - 1; j++)
+            {
+                currentSubstValue[j] = '0';
+            }
+
+            StringBuilder digitsLineToCheck = new StringBuilder();
+
+            // Iterate through the all substitution variants
+            do
+            {
+                digitsLineToCheck.Clear().Append(givenDigitsLine[0]);
                 int pos = 1;
 
-                foreach (var variant in variantArray)
+                foreach (var substVariant in currentSubstValue.ToArray())
                 {
-                    switch (variant)
+                    switch (substVariant)
                     {
                         case '1':
-                            stringToCheck.Append('+');
+                            digitsLineToCheck.Append('+');
                             break;
                         case '2':
-                            stringToCheck.Append('-');
+                            digitsLineToCheck.Append('-');
                             break;
                     }
-                    stringToCheck.Append(givenDigitsLine[pos]);
+                    digitsLineToCheck.Append(givenDigitsLine[pos]);
                     pos++;
                 }
 
-                if (CheckIfEqualsTo100(stringToCheck.ToString()))
+                if (CheckIfEqualsTo100(digitsLineToCheck.ToString()))
                 {
-                    Console.WriteLine(stringToCheck.ToString());
+                    rezult.Add(digitsLineToCheck.ToString());
+                    // Uncomment to make waiting for the big numbers like 12+ not so boring
+                    // Console.WriteLine(digitsLineToCheck.ToString());
                 }
 
-            }
+                currentSubstValue = TernaryInc(currentSubstValue, n - 2);
+            } while (currentSubstValue != null);
+
+            Console.Clear();
 
             return rezult;
         }
 
-        private static List<char[]> GetTernaryVariants(int i)
-        {
-            List<char[]> resultList = new List<char[]>();
-
-            char[] maxValue = new char[i];
-            for (int j = 0; j < i; j++)
-            {
-                maxValue[j] = '2';
-            }
-
-            char[] rezult = new char[i];
-            for (int j = 0; j < i; j++)
-            {
-                rezult[j] = '0';
-            }
-            resultList.Add(rezult.ToArray());
-
-            do
-            {
-                resultList.Add(rezult.ToArray());
-                rezult = TernaryInc(rezult, i-1);
-            } while (rezult != null);
-
-
-            return resultList;
-        }
-
+        // Increment the char[] in ternary way: 0, 1, 2, 10, 11, 12, 20...
         private static char[] TernaryInc(char[] rezult, int i)
         {
-            if (i >= rezult.Length)
-            {
-                i = rezult.Length - 1;
-            }
-
             switch (rezult[i])
             {
                 case '0':
@@ -116,9 +102,7 @@ namespace Orion
                     break;
                 case '2':
                     if (rezult[0] == '2')
-                    {
                         return null;
-                    }
 
                     rezult[i] = '0';
                     TernaryInc(rezult, i - 1);
@@ -130,7 +114,7 @@ namespace Orion
 
         private static bool CheckIfEqualsTo100(string s)
         {
-            double rez = 0;
+            long rez = 0;
             StringBuilder currentNum = new StringBuilder();
 
             foreach (var chr in s)
@@ -139,11 +123,11 @@ namespace Orion
                 {
                     case '+':
                         if (currentNum.Length > 0)
-                            rez += double.Parse(currentNum.ToString());
+                            rez += long.Parse(currentNum.ToString());
                         currentNum.Clear();
                         break;
                     case '-':
-                        rez += double.Parse(currentNum.ToString());
+                        rez += long.Parse(currentNum.ToString());
                         currentNum.Clear();
                         currentNum.Append('-');
                         break;
@@ -152,11 +136,10 @@ namespace Orion
                         break;
                 }
             }
-            rez += double.Parse(currentNum.ToString());
+            rez += long.Parse(currentNum.ToString());
 
             if (rez == 100)
             {
-                Console.WriteLine(s);
                 return true;
             }
 
